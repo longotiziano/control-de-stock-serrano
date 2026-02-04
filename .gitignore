@@ -1,0 +1,19 @@
+# Archivos de entorno
+.env
+venv
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Docker
+*.log
+*.pid
+*.swp
+
+# VS Code
+.vscode/

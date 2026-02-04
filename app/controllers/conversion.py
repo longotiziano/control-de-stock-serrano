@@ -1,0 +1,92 @@
+from app.repositories.products_repository import ProductsRepository
+from app.repositories.raw_material_repository import RawMaterialRepository
+import pandas as pd
+from typing import Literal
+from collections import defaultdict
+
+def products_to_raw_material_df(r_id: int, df: pd.DataFrame, session: Session) -> tuple[bool, pd.DataFrame]:
+    '''
+    Recibido un DataFrame de productos, devuelve un DataFrame de materia prima
+    '''    
+    raw_material_amounts = defaultdict(float)
+
+    for row in df.itertuples():
+        # "Dame el nombre y su cantidad donde el nombre es igual al del DataFrame"
+        amount_by_products = (
+            session.query(RawMaterial.rm_name, Recipes.rm_amount)
+            .join(RawMaterial, RawMaterial.rm_id == Recipes.rm_id)
+            .join(Products, Products.product_id == Recipes.product_id)
+            .filter(
+                Recipes.r_id == int(r_id),
+                Products.product_name == row.product_name
+            )
+            .all()
+        )
+        for rm_name, rm_amount in amount_by_products:
+            raw_material_amounts[rm_name] += float(rm_amount) * row.amount
+
+    return True, pd.DataFrame([
+        {'r_id': r_id, 'rm_name': k, 'amount': v}
+        for k, v in raw_material_amounts.items()
+    ])
+    
+def products_df_to_sales(r_id: int, df: pd.DataFrame, session: Session) -> tuple[bool, pd.DataFrame | list]:
+    '''
+    Dado un DataFrame de productos, devuelve una lista de diccionarios de ventas, con la ID de producto compaginada con su nombre
+    '''
+    # Obteniendo todos los IDs con una consulta
+    repo = ProductsRepository(session)
+    ok, product_map = repo.obtain_name_id_dict(r_id)
+    # Manejando los posibles errores de la DB, con raw_material_map como posibilidad
+    if not ok:
+        return False, product_map
+    
+    list_of_dicts = []
+    for row in df.itertuples():
+        # Obteniendo los IDs de las coincidencias
+        product_id = product_map.get(row.product_name)
+        sales_dict = {
+            'r_id': r_id,
+            'product_id': product_id,
+            'sale_quantity': row.amount
+        }
+
+        list_of_dicts.append(sales_dict)
+
+    return True, pd.DataFrame(list_of_dicts)
+
+
+def raw_material_to_stock_movements(
+    r_id: int,  
+    df: pd.DataFrame, 
+    session: Session,
+    direction: Literal["stock_in", "stock_out"] = "stock_in"
+    ) -> tuple[bool, pd.DataFrame | list]:
+    '''
+    Dado un DataFrame de materia prima, devuelve una lista de diccionarios de movimientos de stock, con la ID de materia prima y la dirección
+    del movimientos
+    '''
+    # Obteniendo todos los IDs con una consulta
+    repo = RawMaterialRepository(session)
+    ok, raw_material_map = repo.obtain_name_id_dict(r_id)
+    # Manejando los posibles errores de la DB, con raw_material_map como posibilidad
+    if not ok:
+        return False, raw_material_map
+    
+    list_of_dicts = []
+    for row in df.itertuples():
+        # Obteniendo los IDs de las coincidencias
+        rm_id = raw_material_map.get(row.rm_name)
+        stock_movement_dict = {
+            'r_id' : r_id,
+            'rm_id' : rm_id,
+            'movement_amount' : row.amount,
+            'movement_type' : direction
+        }
+        
+        list_of_dicts.append(stock_movement_dict)
+
+    return True, pd.DataFrame(list_of_dicts)
+        
+        
+        
