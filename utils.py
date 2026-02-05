@@ -16,12 +16,14 @@ def crear_dataframes(excel_ventas: str, excel_stock: str) -> Tuple[dict | None, 
     - DataFrame de recetas
     - DataFrame de stock
     - DataFrame de ventas
+
+    IMPORTANTE: al momento de nombrar las claves del diccionario retornado, es importante que se llamen IGUAL a las de columnas.json!!!
     """
     dataframes_dict = {}
 
     try:
         sheets = pd.read_excel(excel_stock, sheet_name=None, engine="openpyxl") 
-        dataframes_dict["df_ventas"] = pd.read_excel(excel_ventas, engine="openpyxl")
+        dataframes_dict["ventas"] = pd.read_excel(excel_ventas, engine="openpyxl")
         log.debug("Ambos archivos encontrados")
 
     except FileNotFoundError:
@@ -29,8 +31,8 @@ def crear_dataframes(excel_ventas: str, excel_stock: str) -> Tuple[dict | None, 
         return None, False
 
     try:
-        dataframes_dict["df_recetas"] = sheets["Recetas"] # Importante que los nombres de las hojas coincidan
-        dataframes_dict["df_stock"] = sheets["Stock"]
+        dataframes_dict["recetas"] = sheets["Recetas"] # Importante que los nombres de las hojas coincidan
+        dataframes_dict["stock"] = sheets["Stock"]
         log.debug("Identificación de hojas exitosa")
 
     except KeyError:
