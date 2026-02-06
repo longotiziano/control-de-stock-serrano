@@ -1,0 +1,11 @@
+{
+  "definicion_columnas": {
+    "recetas": ["bar", "plato", "materia_prima", "cantidad", "unidad_de_medida"],
+    "stock": ["bar", "materia_prima", "cantidad_almacenada_previa", "cantidad_almacenada_hipotetica", "cantidad_almacenada_post_turno", "unidad_de_medida"],
+    "ventas": ["nombre", "unidades"],
+    "platos": ["bar", "plato"]
+  },
+  "sucursales": {
+    "lista_bares": ["kubo", "club", "portas"]
+  }
+}
