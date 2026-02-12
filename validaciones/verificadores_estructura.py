@@ -1,16 +1,17 @@
 import json
 import pandas as pd
-from typing import Tuple
+from pathlib import Path
+from typing import Tuple, Any
 
 from logs.loggers import start_logger
 log = start_logger(__name__)
 
-def cargar_json(json_file: str) -> Tuple[dict | str, bool]:
+def cargar_json(json_file: Path) -> Tuple[dict[str, Any], bool]:
     """
     ### Recibe:
     - Un JSON
     ### Devuelve:
-    - El diccionario cargado, o la dirección recibida
+    - El diccionario cargado, o uno vacío
     - Un valor booleano
     """
     try:
@@ -19,7 +20,7 @@ def cargar_json(json_file: str) -> Tuple[dict | str, bool]:
 
     except FileNotFoundError:
         log.error("Error al leer la dirección del JSON -> JSON: %s", json_file)
-        return json_file, False
+        return {}, False
     
     log.debug("Archivo JSON leído correctamente -> JSON: %s", json_file )    
     return dict_, True
@@ -52,7 +53,7 @@ def validar_columnas_df(dfs_dict: dict[str, pd.DataFrame], columns_dict: dict[st
         
         # En caso de que las claves en el JSON no coincidan con las del diccionario de DataFrames
         else:
-            log.error("No pudimos encontrar coincidencias en el JSON para la proporcionada en el diccionario -> Clave: %s", nombre_df)
+            log.error("No pudimos encontrar coincidencias en el JSON para el DataFrame proporcionado en el diccionario -> Clave: %s", nombre_df)
             errores[nombre_df] = "No fue encontrado en el archivo JSON" 
 
     if errores:
@@ -60,4 +61,4 @@ def validar_columnas_df(dfs_dict: dict[str, pd.DataFrame], columns_dict: dict[st
         return errores, False
     
     # No loggeo éxito porque lo loggeo con log.info() en el main.py
-    return None, True
+    return {}, True

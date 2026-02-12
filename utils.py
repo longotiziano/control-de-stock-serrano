@@ -1,21 +1,20 @@
 import pandas as pd
+from pathlib import Path
 from typing import Tuple
 
 from logs.loggers import start_logger
 log = start_logger(__name__)
 
-def restaurantes_existentes():
-    pass
-
-def crear_dataframes(excel_ventas: str, excel_stock: str) -> Tuple[dict | None, bool]:
+def crear_dataframes(excel_ventas: Path, excel_stock: Path) -> Tuple[dict[str, pd.DataFrame], bool]:
     """
     Recibe:
     - Ubicación del Excel de ventas
     - Ubicación del Excel de stock
-    Devuelve:
+
+    Devuelve un diccionario con:
     - DataFrame de recetas
     - DataFrame de stock
-    - DataFrame de ventas
+    - DataFrame de ventas (o un diccionario vacío en caso de error)
 
     IMPORTANTE: al momento de nombrar las claves del diccionario retornado, es importante que se llamen IGUAL a las de columnas.json!!!
     """
@@ -28,7 +27,7 @@ def crear_dataframes(excel_ventas: str, excel_stock: str) -> Tuple[dict | None, 
 
     except FileNotFoundError:
         log.error("Error durante la búsqueda del Excel, porfavor revisar dirección/nombre del archivo")
-        return None, False
+        return {}, False
 
     try:
         dataframes_dict["recetas"] = sheets["Recetas"] # Importante que los nombres de las hojas coincidan
@@ -37,6 +36,16 @@ def crear_dataframes(excel_ventas: str, excel_stock: str) -> Tuple[dict | None, 
 
     except KeyError:
         log.error("Error al identificar las hojas dentro del Excel de stock, porfavor revisar coincidencia de nombres")
-        return None, False
+        return {}, False
     
     return dataframes_dict, True
+
+def paso_snake_case(lista_str: list[str]) -> list[str]:
+    """
+    Convierte strings a snake_case:
+    - Lowercase
+    - Espacios -> underscores
+    """
+    return ["_".join(s.lower().strip().split())
+        for s in lista_str
+    ]
