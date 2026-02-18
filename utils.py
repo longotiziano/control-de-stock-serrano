@@ -40,12 +40,11 @@ def crear_dataframes(excel_ventas: Path, excel_stock: Path) -> Tuple[dict[str, p
     
     return dataframes_dict, True
 
-def paso_snake_case(lista_str: list[str]) -> list[str]:
+def paso_snake_case(s: str) -> str:
     """
-    Convierte strings a snake_case:
+    Convierte string a snake_case:
     - Lowercase
     - Espacios -> underscores
     """
-    return ["_".join(s.lower().strip().split())
-        for s in lista_str
-    ]
+    s = "_".join(s.strip().split()).lower()
+    return s

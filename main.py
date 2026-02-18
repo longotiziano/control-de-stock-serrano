@@ -1,19 +1,19 @@
-from utils import crear_dataframes, paso_snake_case
-from validaciones.verificadores_datos import verificar_existencia_entre_dfs
-from validaciones.verificadores_estructura import cargar_json, validar_columnas_df
+def main():
+    from utils import crear_dataframes, paso_snake_case
+    from validaciones.verificadores_datos import verificar_dfs
+    from validaciones.verificadores_estructura import cargar_json, validar_columnas_df
 
-from pathlib import Path
+    from pathlib import Path
 
-from logs.config import setup_logging
-from logs.loggers import start_logger
+    from logs.config import setup_logging
+    from logs.loggers import start_logger
 
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-EXCEL_VENTAS = DATA_DIR / "ventas" / "INFORME DE VENTAS 31-1-26 CLUB TN.xlsx"
-EXCEL_STOCK = DATA_DIR / "control" / "control_de_stock.xlsx"
-CONFIG_FILE = BASE_DIR / "validaciones" / "config.json"
+    BASE_DIR = Path(__file__).resolve().parent
+    DATA_DIR = BASE_DIR / "data"
+    EXCEL_VENTAS = DATA_DIR / "ventas" / "INFORME DE VENTAS 31-1-26 CLUB TN.xlsx"
+    EXCEL_STOCK = DATA_DIR / "control" / "control_de_stock.xlsx"
+    CONFIG_FILE = BASE_DIR / "validaciones" / "config.json"
 
-if __name__ == "__main__":
     # Largo la configuración del logger
     setup_logging()
     log = start_logger(__name__)
@@ -27,12 +27,8 @@ if __name__ == "__main__":
 
     # Pasado a minúsculas de columnas
     for _, df in dfs_dict.items():
-        df.columns = paso_snake_case(df.columns.tolist())
+        df.columns = [paso_snake_case(col) for col in df.columns]
         log.debug("Paso a snake_case exitoso -> Columnas: %s", df.columns.tolist())
-
-    df_recetas = dfs_dict["recetas"]
-    df_stock = dfs_dict["stock"]
-    df_ventas = dfs_dict["ventas"]
 
     # Carga de archivo
     config_dicts, dict_ok = cargar_json(CONFIG_FILE)
@@ -50,12 +46,30 @@ if __name__ == "__main__":
     bar_name = input("Por favor, introduzca el nombre del bar: ").lower().strip()
 
     while not (bar_name in config_dicts["sucursales"]["lista_bares"]):
-        bar_name = input(f'No se encontraron referencias para el bar "{bar_name}". Por favor, introduzca uno nuevamente: ').lower().strip()
-    log.info(f'Valor ingresado correctamente, realizando conversión para el bar "{bar_name}"...')
+        bar_name = input(f'No se encontraron referencias para el bar {bar_name}. Por favor, introduzca uno nuevamente: ').lower().strip()
+    log.info(f'Valor ingresado correctamente, realizando conversión para el bar {bar_name}...')
 
     # Reducción de DataFrame en base al bar seleccionado
-    df_recetas = df_recetas[df_recetas['bar'] == bar_name]
-    df_stock = df_stock[df_stock['bar'] == bar_name]
+    dfs_dict["recetas"] = dfs_dict["recetas"][dfs_dict["recetas"]['bar'] == bar_name]
+    dfs_dict["stock"] = dfs_dict["stock"][dfs_dict["stock"]['bar'] == bar_name]
 
-    # Validaciones de existencia
-    pass
+    # Elimino PKs nulos y "mugre" en las celdas de DataFrames
+    for df_name, df in dfs_dict.items():
+        log.debug("Realizando limpieza de nulos, espacios y celdas semi-vacías -> DataFrame : %s", df_name)
+
+        obj_cols = df.select_dtypes(include="object").columns
+
+        # Paso a snake_case las celdas, eliminando la "mugre"
+        df = df.apply(lambda x :paso_snake_case(x))
+
+        # Limpio nulos
+        df_pk: str = config_dicts["primary_keys"][df_name] # La clave del diccionario y la del archivo de configuración tiene que ser la misma (receta == receta)
+        df = df[df[df_pk].notna()]
+        log.debug("Limpieza de nulos realizada -> Cantidad de nulos: %s")
+
+    # Verificación de nulos, negativos y de existencia entre DataFrames para el correcto análisis
+    dict_errores, dfs_ok = verificar_dfs(dfs_dict)
+
+if __name__ == "__main__":
+    main()
+    

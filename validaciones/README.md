@@ -3,7 +3,7 @@ En este directorio se encuentran los archivos y módulos relacionados a la verif
 Estás mismas están divididas en 2 secciones:
 
 ### En el Excel
-- Que NO haya materias primas dentro de la hoja `Recetas` que NO estén dentro de la hoja `Stock`
+- Que NO haya materias primas duplicadas en ninguna de las hojas, permitiendo el nombre de la materia prima utilizarse como PK
 
 ### En el programa
 - Verificaciones de estructura del Excel
