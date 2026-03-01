@@ -1,4 +1,5 @@
 def main():
+    from limpieza import limpiar_strings_df
     from utils import crear_dataframes, paso_snake_case
     from validaciones.verificadores_datos import verificar_dfs
     from validaciones.verificadores_estructura import cargar_json, validar_columnas_df

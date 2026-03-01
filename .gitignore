@@ -2,6 +2,9 @@
 .env
 venv
 
+# Archivos de loggeo
+logs/logs.csv
+
 # Python
 __pycache__/
 **/__pycache__/

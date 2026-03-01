@@ -1,6 +1,9 @@
 import pandas as pd
 
-def limpiar_strings(strings_df: pd.DataFrame) -> pd.DataFrame:
+from logs.loggers import start_logger
+log = start_logger(__name__)
+
+def limpiar_strings_df(strings_df: pd.DataFrame) -> pd.DataFrame:
     """
     Realiza una limpieza de espacios sin sentido y pasa a snake_case
 
