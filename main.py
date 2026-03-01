@@ -57,17 +57,18 @@ def main():
     for df_name, df in dfs_dict.items():
         log.debug("Realizando limpieza de nulos, espacios y celdas semi-vacías -> DataFrame : %s", df_name)
 
+        # Obtengo columnas de strings
         obj_cols = df.select_dtypes(include="object").columns
 
         # Paso a snake_case las celdas, eliminando la "mugre"
-        df = df.apply(lambda x :paso_snake_case(x))
+        df = df[obj_cols].apply(lambda x: paso_snake_case(x))
 
         # Limpio nulos
         df_pk: str = config_dicts["primary_keys"][df_name] # La clave del diccionario y la del archivo de configuración tiene que ser la misma (receta == receta)
         df = df[df[df_pk].notna()]
         log.debug("Limpieza de nulos realizada -> Cantidad de nulos: %s")
 
-    # Verificación de nulos, negativos y de existencia entre DataFrames para el correcto análisis
+    # Verificación de negativos y de existencia entre DataFrames para el correcto análisis
     dict_errores, dfs_ok = verificar_dfs(dfs_dict)
 
 if __name__ == "__main__":
