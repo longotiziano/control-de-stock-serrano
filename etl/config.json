@@ -1,0 +1,31 @@
+{
+  "datasets": {
+    "recetas": {
+      "bar": "string", 
+      "plato": "string", 
+      "materia_prima": "string", 
+      "cantidad": "float64", 
+      "unidad_de_medida": "string"
+    },
+    "stock": {
+      "bar": "string", 
+      "materia_prima": "string", 
+      "cantidad_almacenada_previa": "float64", 
+      "cantidad_almacenada_hipotetica": "float64", 
+      "cantidad_almacenada_post_turno": "float64", 
+      "unidad_de_medida": "string"
+    },
+    "ventas": {
+      "nombre": "string", 
+      "unidades": "float64"
+    }
+  },
+  "sucursales": {
+    "lista_bares": ["kubo", "club", "portas"]
+  },
+  "primary_keys": {
+    "recetas": "plato",
+    "stock": "materia_prima",
+    "ventas": "nombre"
+  }
+}

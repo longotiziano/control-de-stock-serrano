@@ -1,8 +1,8 @@
 def main():
-    from limpieza import limpiar_strings_df
+    from etl.limpieza import normalizar_dfs
     from utils import crear_dataframes, paso_snake_case
-    from validaciones.verificadores_datos import verificar_dfs
-    from validaciones.verificadores_estructura import cargar_json, validar_columnas_df
+    from etl.verificadores_datos import verificar_dfs
+    from etl.verificadores_estructura import cargar_json, validar_columnas_df, asignar_datatypes
 
     from pathlib import Path
 
@@ -11,7 +11,7 @@ def main():
 
     BASE_DIR = Path(__file__).resolve().parent
     DATA_DIR = BASE_DIR / "data"
-    EXCEL_VENTAS = DATA_DIR / "ventas" / "INFORME DE VENTAS 31-1-26 CLUB TN.xlsx"
+    EXCEL_VENTAS = DATA_DIR / "ventas" / "excel-test.xlsx"
     EXCEL_STOCK = DATA_DIR / "control" / "control_de_stock.xlsx"
     CONFIG_FILE = BASE_DIR / "validaciones" / "config.json"
 
@@ -26,7 +26,7 @@ def main():
         raise ValueError("Ha habido un error durante la creación de DataFrames, por favor revisar los logs")
     log.info("Creación de DataFrames finalizada")
 
-    # Pasado a minúsculas de columnas
+    # Pasado a snake_case de columnas
     for _, df in dfs_dict.items():
         df.columns = [paso_snake_case(col) for col in df.columns]
         log.debug("Paso a snake_case exitoso -> Columnas: %s", df.columns.tolist())
@@ -38,10 +38,13 @@ def main():
     log.info("Carga del archivo JSON exitosa")
 
     # Validación de estructura de Excels
-    dict_errores, validacion_ok = validar_columnas_df(dfs_dict, config_dicts["definicion_columnas"])
+    dict_errores, validacion_ok = validar_columnas_df(dfs_dict, config_dicts["datasets"])
     if not validacion_ok:
         raise ValueError("Hubo un error durante la validación de los DataFrames -> Diccionario de errores: %s", dict_errores)
     log.info("DataFrames validados correctamente")
+
+    # Asignación de tipos de dato
+    dfs_dict = asignar_datatypes(dfs_dict, config_dicts["datasets"])
 
     # Introducción al programa
     bar_name = input("Por favor, introduzca el nombre del bar: ").lower().strip()
@@ -54,20 +57,8 @@ def main():
     dfs_dict["recetas"] = dfs_dict["recetas"][dfs_dict["recetas"]['bar'] == bar_name]
     dfs_dict["stock"] = dfs_dict["stock"][dfs_dict["stock"]['bar'] == bar_name]
 
-    # Elimino PKs nulos y "mugre" en las celdas de DataFrames
-    for df_name, df in dfs_dict.items():
-        log.debug("Realizando limpieza de nulos, espacios y celdas semi-vacías -> DataFrame : %s", df_name)
-
-        # Obtengo columnas de strings
-        obj_cols = df.select_dtypes(include="object").columns
-
-        # Paso a snake_case las celdas, eliminando la "mugre"
-        df = df[obj_cols].apply(lambda x: paso_snake_case(x))
-
-        # Limpio nulos
-        df_pk: str = config_dicts["primary_keys"][df_name] # La clave del diccionario y la del archivo de configuración tiene que ser la misma (receta == receta)
-        df = df[df[df_pk].notna()]
-        log.debug("Limpieza de nulos realizada -> Cantidad de nulos: %s")
+    # Normalización de DataFrames -> Eliminación de nulos y pasado a snake_case
+    dfs_dict, normalizacion_ok = normalizar_dfs(dfs_dict, config_dicts["primary_keys"])
 
     # Verificación de negativos y de existencia entre DataFrames para el correcto análisis
     dict_errores, dfs_ok = verificar_dfs(dfs_dict)

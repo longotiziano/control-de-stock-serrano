@@ -61,7 +61,7 @@ def _verificacion_nulos_negativos(s1: pd.Series) -> Tuple[dict, bool]:
 
 def verificar_dfs(dict_dfs: dict[str, pd.DataFrame]) -> Tuple[dict, bool]:
     """
-    Realiza verificación de nulos, negativos y existencia entre 3 DataFrames ESPECÍFICOS
+    Realiza verificación de negativos y existencia entre 3 DataFrames ESPECÍFICOS
 
     Recibe un diccionario con:
     - DataFrame de recetas
@@ -77,11 +77,6 @@ def verificar_dfs(dict_dfs: dict[str, pd.DataFrame]) -> Tuple[dict, bool]:
     # Realizo verificaciones de nulos y valores negativos
     for df_name, df in dict_dfs.items():
         log.debug("Realizando la verificación de nulos y valores negativos -> DataFrame: %s", df_name)
-
-        # Elimino valores sin PK
-        df_pks = df[~df.isna()]
-        log.debug("Se eliminaron los valores que no poseían ")
-
 
         # Obtengo las columnas numéricas del DataFrame
         cols_numericas = df.select_dtypes(include="number").columns
