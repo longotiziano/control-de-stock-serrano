@@ -43,8 +43,11 @@ def main():
         raise ValueError("Hubo un error durante la validación de los DataFrames -> Diccionario de errores: %s", dict_errores)
     log.info("DataFrames validados correctamente")
 
+    # Normalización de DataFrames -> Eliminación de nulos y pasado a snake_case
+    dfs_dict = normalizar_dfs(dfs_dict, config_dicts["primary_keys"], config_dicts["datasets"]) # No cuido errores porque no tiene por qué haber
+
     # Asignación de tipos de dato
-    dfs_dict = asignar_datatypes(dfs_dict, config_dicts["datasets"])
+    dfs_dics = asignar_datatypes(dfs_dict, config_dicts["datasets"])
 
     # Introducción al programa
     bar_name = input("Por favor, introduzca el nombre del bar: ").lower().strip()
@@ -56,9 +59,6 @@ def main():
     # Reducción de DataFrame en base al bar seleccionado
     dfs_dict["recetas"] = dfs_dict["recetas"][dfs_dict["recetas"]['bar'] == bar_name]
     dfs_dict["stock"] = dfs_dict["stock"][dfs_dict["stock"]['bar'] == bar_name]
-
-    # Normalización de DataFrames -> Eliminación de nulos y pasado a snake_case
-    dfs_dict, normalizacion_ok = normalizar_dfs(dfs_dict, config_dicts["primary_keys"])
 
     # Verificación de negativos y de existencia entre DataFrames para el correcto análisis
     dict_errores, dfs_ok = verificar_dfs(dfs_dict)

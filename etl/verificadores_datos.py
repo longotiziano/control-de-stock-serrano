@@ -79,7 +79,7 @@ def verificar_dfs(dict_dfs: dict[str, pd.DataFrame]) -> Tuple[dict, bool]:
         log.debug("Realizando la verificación de nulos y valores negativos -> DataFrame: %s", df_name)
 
         # Obtengo las columnas numéricas del DataFrame
-        cols_numericas = df.select_dtypes(include="number").columns
+        cols_numericas = df.select_dtypes(include="number").columns # Esto está bien porque los dtypes ya fueron asignados
         log.debug("Columnas numéricas del DataFrame detectadas -> Columnas: %s", cols_numericas.tolist())
 
         valores_negativos =  s1[s1 < 0].tolist()        # SIN TERMINAR

@@ -63,7 +63,7 @@ def validar_columnas_df(dfs_dict: dict[str, pd.DataFrame], columns_dict: dict[st
     # No loggeo éxito porque lo loggeo con log.info() en el main.py
     return {}, True
 
-def asignar_datatypes(dfs_dict: dict[str, pd.DataFrame], columns_dict: dict[str, dict]) -> Tuple[dict[str, Any], bool]:
+def asignar_datatypes(dfs_dict: dict[str, pd.DataFrame], columns_dict: dict[str, dict]) -> dict[str, pd.DataFrame]:
     """
     Asigna los los tipos de datos a las respectivas columnas en los Excel.
 
@@ -77,7 +77,26 @@ def asignar_datatypes(dfs_dict: dict[str, pd.DataFrame], columns_dict: dict[str,
     - El mismo diccionario con los datatypes asignados, o un diccionario de errores
     - Valor booleano
     """
-    errores = {}
-
     for df_name, df in dfs_dict.items():
-        df[] # LO DEJE aca
+        cols_datatypes: dict = columns_dict[df_name] # El nombre del DataFrame coincide con el de config, como fue previamente chequeado
+        log.debug("Se han obtenido las columnas con sus respectivos tipos de datos -> DataFrame: %s", df_name)
+
+        for col, datatype in cols_datatypes.items():
+            original = df[col]
+
+            converted = original.astype(datatype, errors="coerce") # Los errores se convierten en NaN, acá simplemente "delego" los errores a otras funciones
+
+            invalid_mask = original.notna() & converted.isna()
+            invalid_count = invalid_mask.sum()
+
+            if invalid_count > 0:
+                log.warning(
+                    "Se omitieron %s valores inválidos en la columna %s",
+                    invalid_count,
+                    col
+                )
+
+            df[col] = converted
+
+    return dfs_dict
+    
