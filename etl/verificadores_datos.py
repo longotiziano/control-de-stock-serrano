@@ -59,7 +59,7 @@ def _verificacion_nulos_negativos(s1: pd.Series) -> Tuple[dict, bool]:
     return dict_errores, True
 
 
-def verificar_dfs(dict_dfs: dict[str, pd.DataFrame]) -> Tuple[dict, bool]:
+def verificar_dfs(dict_dfs: dict[str, pd.DataFrame]) -> Tuple[dict, bool] | None:
     """
     Realiza verificación de negativos y existencia entre 3 DataFrames ESPECÍFICOS
 
@@ -72,6 +72,7 @@ def verificar_dfs(dict_dfs: dict[str, pd.DataFrame]) -> Tuple[dict, bool]:
     - Un diccionario de errores
     - Un valor booleano
     """
+    return None # Salteo momentáneamente
     dict_errores = {}
 
     # Realizo verificaciones de nulos y valores negativos

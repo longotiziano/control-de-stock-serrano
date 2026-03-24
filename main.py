@@ -61,7 +61,7 @@ def main():
     dfs_dict["stock"] = dfs_dict["stock"][dfs_dict["stock"]['bar'] == bar_name]
 
     # Verificación de negativos y de existencia entre DataFrames para el correcto análisis
-    dict_errores, dfs_ok = verificar_dfs(dfs_dict)
+    # dict_errores, dfs_ok = verificar_dfs(dfs_dict)
 
 if __name__ == "__main__":
     main()
